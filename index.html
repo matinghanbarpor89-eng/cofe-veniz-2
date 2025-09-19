@@ -1,132 +1,488 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منوی کافه بُرسِل</title>
-<style>
-  body {
-    font-family: 'Tahoma', sans-serif;
-    background: #f9f9f9;
-    margin: 0;
-    padding: 0;
-    direction: rtl;
-  }
-  header {
-    background: #6c4f3d;
-    color: white;
-    padding: 20px;
-    text-align: center;
-  }
-  h2 {
-    margin-top: 40px;
-    text-align: center;
-    color: #333;
-  }
-  .menu-section {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 0 20px;
-  }
-  .menu-item {
-    display: flex;
-    justify-content: space-between;
-    background: white;
-    margin: 10px 0;
-    padding: 15px 20px;
-    border-radius: 10px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    align-items: center;
-  }
-  .menu-item img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-left: 20px;
-  }
-  .price {
-    font-weight: bold;
-    color: #6c4f3d;
-  }
-  .categories {
-    text-align: center;
-    margin: 20px 0;
-  }
-  .categories button {
-    background: #eee;
-    border: none;
-    padding: 10px 20px;
-    margin: 0 5px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .categories button.active, .categories button:hover {
-    background: #6c4f3d;
-    color: white;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منوی کافه دلنشین</title>
+  <style>
+    @font-face {
+      font-family: 'IRANSans';
+      src: url('fonts/IRANSans.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body {
+      font-family: 'IRANSans', sans-serif;
+      margin: 0;
+      background: #f8f5f2;
+      color: #333;
+    }
+
+    /* دکمه باز کردن سبد */
+    #toggle-cart {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #6f4e37;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      z-index: 1100;
+      transition: all 0.3s ease;
+    }
+
+    #toggle-cart:hover {
+      background: #5a3c26;
+      transform: translateY(-2px);
+    }
+
+    /* سبد خرید دسکتاپ */
+    #cart {
+      width: 300px;
+      background: #fff;
+      border-radius: 15px 0 0 15px;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+      position: fixed;
+      top: 0;
+      right: -320px;
+      height: 100%;
+      padding: 20px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cart.open {
+      right: 0;
+    }
+
+    #cart h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #6f4e37;
+      padding-bottom: 10px;
+    }
+
+    #cart ul {
+      list-style: none;
+      padding: 0;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    #cart li {
+      background: #fdfdfd;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    #cart .remove-btn {
+      border: none;
+      background: #d9534f;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 2px 6px;
+      transition: all 0.2s ease;
+    }
+
+    #cart .remove-btn:hover {
+      transform: scale(1.1);
+    }
+
+    #cart-total {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #6f4e37;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 2px dashed #eee;
+    }
+
+    /* منو */
+    main {
+      padding: 20px;
+    }
+
+    #search {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s;
+    }
+
+    #search:focus {
+      outline: none;
+      border-color: #6f4e37;
+    }
+
+    #menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .menu-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      animation: fadeIn 0.5s ease forwards;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .menu-card h2 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      padding: 12px 15px;
+      background: #fafafa;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .item:hover {
+      background: #f0f0f0;
+      transform: scale(1.02);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .item-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .price {
+      color: #6f4e37;
+      font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* مودال */
+    #item-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1200;
+    }
+
+    #item-modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 450px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-content button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #6f4e37;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: #5a3c26;
+    }
+
+    .close-btn {
+      background: #d9534f !important;
+      margin-left: 10px;
+    }
+
+    /* پیام جستجو */
+    #empty-search-message {
+      display: none;
+      text-align: center;
+      font-size: 16px;
+      margin-top: 20px;
+      color: #777;
+    }
+
+    /* 📱 موبایل: Bottom Sheet */
+    @media (max-width: 768px) {
+      #cart {
+        width: 100%;
+        height: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        padding: 10px 20px;
+        transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      #cart.open {
+        height: 40%;
+      }
+      #cart::before {
+        content: "";
+        width: 50px;
+        height: 5px;
+        background: #ccc;
+        border-radius: 3px;
+        display: block;
+        margin: 8px auto;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>کافه بُرسِل</h1>
-</header>
+  <button id="toggle-cart">🛒 سبد خرید</button>
 
-<div class="categories">
-  <button class="active" onclick="filterMenu('all')">همه</button>
-  <button onclick="filterMenu('hot')">نوشیدنی گرم</button>
-  <button onclick="filterMenu('cold')">نوشیدنی سرد</button>
-  <button onclick="filterMenu('snack')">خوراکی‌ها</button>
-</div>
+  <div id="cart">
+    <h2>سبد خرید</h2>
+    <ul id="cart-items"></ul>
+    <p id="cart-total">جمع کل: 0 تومان</p>
+  </div>
 
-<div class="menu-section">
-  <div class="menu-item" data-category="hot">
-    <div>
-      <h3>قهوه ترک</h3>
-    </div>
-    <span class="price">۸۰,۰۰۰</span>
-    <img src="https://via.placeholder.com/80" alt="قهوه ترک">
-  </div>
-  <div class="menu-item" data-category="hot">
-    <div>
-      <h3>کاپوچینو</h3>
-    </div>
-    <span class="price">۱۲۰,۰۰۰</span>
-    <img src="https://via.placeholder.com/80" alt="کاپوچینو">
-  </div>
-  <div class="menu-item" data-category="cold">
-    <div>
-      <h3>آیس کافی</h3>
-    </div>
-    <span class="price">۱۰۰,۰۰۰</span>
-    <img src="https://via.placeholder.com/80" alt="آیس کافی">
-  </div>
-  <div class="menu-item" data-category="snack">
-    <div>
-      <h3>پنینی مرغ</h3>
-    </div>
-    <span class="price">۹۰,۰۰۰</span>
-    <img src="https://via.placeholder.com/80" alt="پنینی مرغ">
-  </div>
-</div>
+  <main>
+    <input type="text" id="search" placeholder="جستجو در منو...">
+    <div id="menu-container"></div>
+    <p id="empty-search-message">هیچ آیتمی یافت نشد</p>
+  </main>
 
-<script>
-function filterMenu(category) {
-  const items = document.querySelectorAll('.menu-item');
-  document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  <div id="item-modal">
+    <div class="modal-content">
+      <h2 id="modal-title"></h2>
+      <img id="modal-image" src="" alt="">
+      <p id="modal-description"></p>
+      <button id="modal-add-btn">➕ افزودن به سبد</button>
+      <button class="close-btn">❌ بستن</button>
+    </div>
+  </div>
 
-  items.forEach(item => {
-    if(category === 'all' || item.dataset.category === category) {
-      item.style.display = 'flex';
-    } else {
-      item.style.display = 'none';
+  <script>
+    const searchInput = document.getElementById('search');
+    const menuContainer = document.getElementById('menu-container');
+    const emptySearchMessage = document.getElementById('empty-search-message');
+    const itemModal = document.getElementById('item-modal');
+    const closeBtn = document.querySelector('.close-btn');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotalEl = document.getElementById('cart-total');
+    const toggleCartBtn = document.getElementById('toggle-cart');
+    const cartPanel = document.getElementById('cart');
+    let cart = [];
+
+    const menuData = {
+      "نوشیدنی‌های گرم": [
+        { name: "قهوه ترک", price: 80000, image: "images/turkish-coffee.jpg", desc: "قهوه اصیل ترک" },
+        { name: "کاپوچینو", price: 120000, image: "images/cappuccino.jpg", desc: "کاپوچینوی خامه‌ای" },
+        { name: "هات چاکلت", price: 100000, image: "images/hotchocolate.jpg", desc: "شکلات داغ خوشمزه" }
+      ],
+      "نوشیدنی‌های سرد": [
+        { name: "آیس لاته", price: 150000, image: "images/ice-latte.jpg", desc: "لاته خنک و خوش‌طعم" },
+        { name: "شیک وانیل", price: 180000, image: "images/vanilla-shake.jpg", desc: "شیک وانیل خامه‌ای" }
+      ]
+    };
+
+    function renderMenu(filteredData = menuData) {
+      menuContainer.innerHTML = "";
+      for (const [category, items] of Object.entries(filteredData)) {
+        if (items.length > 0) {
+          const card = document.createElement('div');
+          card.classList.add('menu-card');
+
+          const title = document.createElement('h2');
+          title.textContent = category;
+          card.appendChild(title);
+
+          items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('item');
+            itemDiv.innerHTML = `
+              <span class="item-name">${item.name}</span>
+              <span class="price">${item.price.toLocaleString()} تومان</span>
+            `;
+            itemDiv.addEventListener('click', () => openItemModal(item));
+            card.appendChild(itemDiv);
+          });
+
+          menuContainer.appendChild(card);
+        }
+      }
     }
-  });
-}
-</script>
 
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) {
+        renderMenu(menuData);
+        emptySearchMessage.style.display = 'none';
+        return;
+      }
+
+      const filtered = {};
+      let hasResults = false;
+
+      for (const [category, items] of Object.entries(menuData)) {
+        const matched = items.filter(item =>
+          item.name.toLowerCase().includes(query) ||
+          item.desc.toLowerCase().includes(query)
+        );
+        if (matched.length > 0) {
+          filtered[category] = matched;
+          hasResults = true;
+        }
+      }
+
+      if (hasResults) {
+        renderMenu(filtered);
+        emptySearchMessage.style.display = 'none';
+      } else {
+        menuContainer.innerHTML = "";
+        emptySearchMessage.style.display = 'block';
+      }
+    });
+
+    function openItemModal(item) {
+      document.getElementById('modal-title').textContent = item.name;
+      document.getElementById('modal-description').textContent = item.desc;
+      document.getElementById('modal-image').src = item.image;
+
+      const modalAddBtn = document.getElementById('modal-add-btn');
+      modalAddBtn.onclick = () => {
+        addToCart(item);
+        closeModal();
+      };
+
+      itemModal.classList.add('open');
+    }
+
+    function closeModal() {
+      itemModal.classList.remove('open');
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    itemModal.addEventListener('click', (e) => {
+      if (e.target === itemModal) closeModal();
+    });
+
+    function addToCart(item) {
+      cart.push(item);
+      updateCart();
+    }
+
+    function updateCart() {
+      cartItemsContainer.innerHTML = "";
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        total += item.price;
+
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${item.name} - ${item.price.toLocaleString()} تومان
+          <button class="remove-btn" data-index="${index}">❌</button>
+        `;
+        cartItemsContainer.appendChild(li);
+      });
+
+      cartTotalEl.textContent = `جمع کل: ${total.toLocaleString()} تومان`;
+
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.target.getAttribute('data-index');
+          cart.splice(index, 1);
+          updateCart();
+        });
+      });
+    }
+
+    toggleCartBtn.addEventListener('click', () => {
+      cartPanel.classList.toggle('open');
+    });
+
+    // 📱 درگ برای Bottom Sheet
+    let startY, startHeight;
+    cartPanel.addEventListener('touchstart', (e) => {
+      if (window.innerWidth > 768) return;
+      startY = e.touches[0].clientY;
+      startHeight = cartPanel.offsetHeight;
+    });
+
+    cartPanel.addEventListener('touchmove', (e) => {
+      if (window.innerWidth > 768) return;
+      const deltaY = startY - e.touches[0].clientY;
+      let newHeight = startHeight + deltaY;
+      newHeight = Math.max(0, Math.min(window.innerHeight * 0.9, newHeight));
+      cartPanel.style.height = newHeight + "px";
+    });
+
+    cartPanel.addEventListener('touchend', () => {
+      if (window.innerWidth > 768) return;
+      const currentHeight = cartPanel.offsetHeight;
+      if (currentHeight < window.innerHeight * 0.25) {
+        cartPanel.classList.remove('open');
+        cartPanel.style.height = "0px";
+      } else if (currentHeight < window.innerHeight * 0.6) {
+        cartPanel.style.height = "40%";
+      } else {
+        cartPanel.style.height = "90%";
+      }
+    });
+
+    renderMenu();
+  </script>
 </body>
 </html>
